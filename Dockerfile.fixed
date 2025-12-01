@@ -1,0 +1,40 @@
+# Build stage
+# Updated to Node.js 20 (latest LTS) to fix vulnerabilities
+FROM node:20-alpine as build
+WORKDIR /app
+ENV DISABLE_ESLINT_PLUGIN=true
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install --no-package-lock
+
+# Copy the rest of the application code
+COPY . .
+RUN npm run build
+
+# Production stage
+# Using a more recent Alpine version with fewer vulnerabilities
+FROM nginx:stable-alpine
+
+# Copy the build output to replace the default nginx contents
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Update packages before installing to get latest security patches
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache curl openssl
+
+# Expose port
+EXPOSE 80
+
+# Start nginx with non-root user for better security
+# Create a non-root user to run nginx
+RUN adduser -D -H -u 1000 -s /sbin/nologin nginx-user && \
+    chown -R nginx-user:nginx-user /var/cache/nginx /etc/nginx/conf.d
+
+USER nginx-user
+
+CMD ["nginx", "-g", "daemon off;"]
