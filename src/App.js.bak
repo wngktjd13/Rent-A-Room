@@ -15,13 +15,15 @@ import Login from './components/login/Login';
 import RoomsList from './components/roomslist/RoomsList';
 import Home from './components/home/Home';
 
+
 function App() {
-  const isVSCodeServer = window.location.href.includes('cloudfront.net');
-  const basename = isVSCodeServer ? '/proxy/3000/' : '/';
 
   return (
     <div>
-      <Router basename={basename}>
+
+
+      <Router>
+
         <nav className="navbar navbar-expand navbar-dark bg-dark">
           <Link to={"/"} className="navbar-brand">
             Rent A Room
@@ -42,8 +44,10 @@ function App() {
                 Register
               </Link>
             </li>
+
           </div>
         </nav>
+
 
         <Routes>
           <Route exact path="/" element={<Home />} />
@@ -52,9 +56,13 @@ function App() {
           <Route path="/register" element={<Signup />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+
       </Router>
+
+
     </div>
   );
+
 }
 
 export default App;
